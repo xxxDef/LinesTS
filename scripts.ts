@@ -21,18 +21,22 @@ function* getNeighbors(cur: Pos) : Generator<Pos> {
         yield {row: cur.row, col:cur.col+1}; 
 }
 
-function* whereAvailable(distances: Distances, poses: Generator<Pos>) : Generator<Pos> {   
-    for (let pos of poses) {
+function* getAvailableNeighbors(distances: Distances, curPos: Pos) : Generator<Pos> {   
+    
+    for (let pos of getNeighbors(curPos)) {
         if (distances[pos.row][pos.col] != null)
             yield pos;
     }
 }
 
-function findMin(distances: Distances, positions: Generator<Pos>) : {pos: Pos, distance : Distance} | null {
+function findMinDistance(distances: Distances, pos: Pos) : {pos: Pos, distance : Distance} | null {
+    
     let resPos: Pos | null = null;
     let resDist: Distance = null;
 
-    for (let pos of positions) {
+    const available = getAvailableNeighbors(distances, pos);
+
+    for (let pos of available) {
         const curDist = distances[pos.row][pos.col];
         if (curDist === null)
             continue;
@@ -47,7 +51,7 @@ function findMin(distances: Distances, positions: Generator<Pos>) : {pos: Pos, d
     return {pos: resPos, distance: resDist};
 }
 
-function* generateLines() : Generator<Pos | null> {
+function* generateDirections() : Generator<Pos | null> {
     // horisontal
     for (let row = 0; row < Rows; ++row)  {
         for (let col = 0; col < Rows; ++col)
@@ -83,11 +87,12 @@ function* generateLines() : Generator<Pos | null> {
     }
 }
 
-function* scanLines(gameField: LinesGame, lines: Generator<Pos|null>, minLine = 5) : Generator<GameCell[]> {
+function* scanForCompletedLinesLines(gameField: LinesGame, minLine = 5) : Generator<GameCell[]> {
+    
     let color : Color | null = null;
     let line: GameCell[] = [];
     
-    for (let pos of lines) {       
+    for (let pos of generateDirections()) {       
         
         const cell = pos === null ? null : gameField.getCell(pos.row, pos.col);
 
@@ -113,7 +118,7 @@ function* scanLines(gameField: LinesGame, lines: Generator<Pos|null>, minLine = 
 function findItemsToRemove(gameField: LinesGame, minLine = 5) : GameCell[] {
     const result: GameCell[] = [];
 
-    for (let line of scanLines(gameField, generateLines(), minLine))
+    for (let line of scanForCompletedLinesLines(gameField, minLine))
         result.push(...line);
     return result;
 }
@@ -140,9 +145,8 @@ function fillDistances(distances: Distances) : number {
             if (curLen === null) // occuped
                 continue;
 
-            const min = findMin(distances,
-                whereAvailable(distances, 
-                    getNeighbors({row, col})));
+            const min = findMinDistance(distances, {row, col});
+               
 
             if (min === null) {
                 // no neighbors arround, exclude from next calculation
@@ -170,10 +174,8 @@ function fillDistances(distances: Distances) : number {
 
 function tracePath(distances: Distances, curPos : Pos) : Pos[] {
             
-    const min = findMin(distances, 
-        whereAvailable(distances, 
-            getNeighbors(curPos))
-    );
+    const min = findMinDistance(distances, curPos)
+
     if (min === null)
         throw "alghoritm error: no near neighbor";
 

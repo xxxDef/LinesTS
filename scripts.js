@@ -24,16 +24,17 @@ function* getNeighbors(cur) {
     if (cur.col < Rows - 1)
         yield { row: cur.row, col: cur.col + 1 };
 }
-function* whereAvailable(distances, poses) {
-    for (let pos of poses) {
+function* getAvailableNeighbors(distances, curPos) {
+    for (let pos of getNeighbors(curPos)) {
         if (distances[pos.row][pos.col] != null)
             yield pos;
     }
 }
-function findMin(distances, positions) {
+function findMinDistance(distances, pos) {
     let resPos = null;
     let resDist = null;
-    for (let pos of positions) {
+    const available = getAvailableNeighbors(distances, pos);
+    for (let pos of available) {
         const curDist = distances[pos.row][pos.col];
         if (curDist === null)
             continue;
@@ -46,7 +47,7 @@ function findMin(distances, positions) {
         return null;
     return { pos: resPos, distance: resDist };
 }
-function* generateLines() {
+function* generateDirections() {
     // horisontal
     for (let row = 0; row < Rows; ++row) {
         for (let col = 0; col < Rows; ++col)
@@ -78,10 +79,10 @@ function* generateLines() {
         }
     }
 }
-function* scanLines(gameField, lines, minLine = 5) {
+function* scanForCompletedLinesLines(gameField, minLine = 5) {
     let color = null;
     let line = [];
-    for (let pos of lines) {
+    for (let pos of generateDirections()) {
         const cell = pos === null ? null : gameField.getCell(pos.row, pos.col);
         if (cell === null || color === null || cell.color !== color) {
             if (line.length >= minLine)
@@ -102,7 +103,7 @@ function* scanLines(gameField, lines, minLine = 5) {
 }
 function findItemsToRemove(gameField, minLine = 5) {
     const result = [];
-    for (let line of scanLines(gameField, generateLines(), minLine))
+    for (let line of scanForCompletedLinesLines(gameField, minLine))
         result.push(...line);
     return result;
 }
@@ -121,7 +122,7 @@ function fillDistances(distances) {
             const curLen = distances[row][col];
             if (curLen === null) // occuped
                 continue;
-            const min = findMin(distances, whereAvailable(distances, getNeighbors({ row, col })));
+            const min = findMinDistance(distances, { row, col });
             if (min === null) {
                 // no neighbors arround, exclude from next calculation
                 distances[row][col] = null;
@@ -143,7 +144,7 @@ function fillDistances(distances) {
     return found;
 }
 function tracePath(distances, curPos) {
-    const min = findMin(distances, whereAvailable(distances, getNeighbors(curPos)));
+    const min = findMinDistance(distances, curPos);
     if (min === null)
         throw "alghoritm error: no near neighbor";
     if (min.distance === 0)
