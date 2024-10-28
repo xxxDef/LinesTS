@@ -1,0 +1,56 @@
+<html>
+    <head>
+        <title>Lines</title>
+    </head>
+    <link rel="stylesheet" type="text/css" href="styles.css"/>
+    <script>
+        function clickCircle(e)
+        {
+            console.log("Click circle", e);
+        }
+
+        
+    </script>
+</html>
+<body>
+    <div id="gameContainer">       
+        <div id="topPane" >
+            <div >
+                <div>Next:</div>
+                <div id="nextBalls" >
+                    <div class="placeForNext"><div id="nextCircle0" class="circle color2"></div></div>
+                    <div class="placeForNext"><div id="nextCircle1" class="circle color1"></div></div>
+                    <div class="placeForNext"><div id="nextCircle2" class="circle color3"></div></div>                 
+                </div>
+            </div>
+            <div><button id="restart">Restart</button></div>
+            <div >
+                High:
+                <div class="score" id="high">--762345</div>
+                Score:
+                <div class="score" id="score">--2345</div>
+            </div>
+        </div>
+    
+        <div id="gameField"></div>
+    
+        <div id="bottomPane">
+            <details class="inline">
+                <summary>Help</summary>
+                <div>
+                    move a ball, click on it with the mouse (circle will appear) to select it, then click on a free cell in a field. To deselect a ball just click on another. If movement is possible, ball will go to the specified empty field. After each turn, 3 new balls are placed on a field (random colours & positions). Preview panel shows colours of the next 3 balls. You can always force the next turn without moving anything. Click on preview panel. If the game field is full, game is over.
+                    Game goal is to arrange balls of the same colour in a straight lines (every direction). 5 or more balls on a straight line are removed and points are given. Longer lines give more points to you. Crossing lines count together.</div>
+                </div>
+            </details> 
+        </div>
+
+    </div>
+
+    <script src="scripts.js"></script>
+    <script>
+
+        const game = new LinesGame();
+
+
+    </script> 
+</body>
